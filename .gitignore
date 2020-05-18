@@ -1,9 +1,12 @@
-image-data/
+results/
+
+sample_config/
+sample_enwik8
+sample_image-data/
+sample_music/
+sample_vid.mp4
+
 minitest/
 enwik8.zip
 enwik9.zip
-config/
-enwik8
-music/
-vid.mp4
 

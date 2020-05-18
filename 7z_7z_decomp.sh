@@ -1,0 +1,6 @@
+#!/usr/bin/dash
+
+COMPRESSED_FILE=$1
+TEMP_DIR=$2
+
+7z x $COMPRESSED_FILE -o$TEMP_DIR

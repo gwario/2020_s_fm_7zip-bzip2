@@ -52,8 +52,12 @@ fi
 
 
 
+RESULT_PREFIX="result"
+
+
+
 echo "Running compression..."
-STATS_FILE=$ALGO"_compress_"$FILE_OR_DIR".csv"
+STATS_FILE=$RESULT_PREFIX"_"$FILE_OR_DIR"_compress_"$ALGO".csv"
 # write output file with header
 echo "id of repetition;elapsed wall clock time[s];CPU-time (system)[s];CPU-time (user)[s];percentage CPU;maximum resident set size[Kilobytes];file system inputs;file system outputs;command exit code;command" > $STATS_FILE
 
@@ -62,13 +66,13 @@ while [ $idx -lt $REPS ]
 do
 	echo "Repetition $idx..."
 
-	COMPRESSED_FILE=$TEMP_DIR"/"$FILE_OR_DIR"_"$idx"."$ALGO_EXT	
+	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR"."$ALGO_EXT
 
 	if [ "$ALGO" = "bzip2" ]
 	then
-		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" 7z a -ttar $FILE_OR_DIR -so -an | 7z a -t$ALGO $COMPRESSED_FILE -si &>/dev/null
+		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_bzip2_comp.sh $FILE_OR_DIR $COMPRESSED_FILE &>/dev/null
 	else
-		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" 7z a -t$ALGO $COMPRESSED_FILE $FILE_OR_DIR &>/dev/null
+		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_7z_comp.sh $COMPRESSED_FILE $FILE_OR_DIR &>/dev/null
 	fi
 
 	sleep 5
@@ -79,7 +83,7 @@ done
 
 
 echo "Running decompression..."
-STATS_FILE=$ALGO"_decompress_"$FILE_OR_DIR".csv"
+STATS_FILE=$RESULT_PREFIX"_"$FILE_OR_DIR"_decompress_"$ALGO".csv"
 # write output file with header
 echo "id of repetition;elapsed wall clock time[s];CPU-time (system)[s];CPU-time (user)[s];percentage CPU;maximum resident set size[Kilobytes];file system inputs;file system outputs;command exit code;command" > $STATS_FILE
 
@@ -88,16 +92,19 @@ while [ $idx -lt $REPS ]
 do
 	echo "Repetition $idx..."
 
-	COMPRESSED_FILE=$TEMP_DIR"/"$FILE_OR_DIR"_"$idx"."$ALGO_EXT	
+	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR"."$ALGO_EXT	
 
 	if [ "$ALGO" = "bzip2" ]
 	then
-		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" 7z x -t$ALGO $COMPRESSED_FILE -so | 7z x -ttar -si -an -o$TEMP_DIR &>/dev/null
+		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_bzip2_decomp.sh $COMPRESSED_FILE $TEMP_DIR &>/dev/null
 	else
-		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" 7z x $COMPRESSED_FILE -o$TEMP_DIR &>/dev/null
+		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_7z_decomp.sh $COMPRESSED_FILE $TEMP_DIR &>/dev/null
 	fi
 
-	mv $TEMP_DIR"/"$FILE_OR_DIR $TEMP_DIR"/"$FILE_OR_DIR"_"$idx
+	TEMP_DECOMPRESSED_FILE=$TEMP_DIR"/"$FILE_OR_DIR
+	DECOMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR
+	
+	mv $TEMP_DECOMPRESSED_FILE $DECOMPRESSED_FILE
 
 	sleep 5
 
@@ -108,21 +115,21 @@ done
 
 # This is partly for compression ration and partly as sanity check
 echo "Running file size comparison..."
-SIZE_FILE=$ALGO"_"$FILE_OR_DIR"_size.csv"
+SIZE_FILE=$RESULT_PREFIX"_"$FILE_OR_DIR"_size_"$ALGO".csv"
 echo "id of repetition;uncompressed;compressed;decompressed" > $SIZE_FILE
 
-SIZE_UNCOMPRESSED=$(du -b "$FILE_OR_DIR" | grep -Po '^\d+')
+SIZE_UNCOMPRESSED=$(du -sb "$FILE_OR_DIR" | grep -Po '^\d+')
 
 idx=0
 while [ $idx -lt $REPS ]
 do
 	echo "Repetition $idx..."
+	
+	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR"."$ALGO_EXT
+	DECOMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR
 
-	COMPRESSED_FILE=$TEMP_DIR"/"$FILE_OR_DIR"_"$idx"."$ALGO_EXT
-	DECOMPRESSED_FILE=$TEMP_DIR"/"$FILE_OR_DIR"_"$idx
-
-	SIZE_COMPRESSED=$(du -b "$COMPRESSED_FILE" | grep -Po '^\d+')
-	SIZE_DECOMPRESSED=$(du -b "$DECOMPRESSED_FILE" | grep -Po '^\d+')
+	SIZE_COMPRESSED=$(du -sb "$COMPRESSED_FILE" | grep -Po '^\d+')
+	SIZE_DECOMPRESSED=$(du -sb "$DECOMPRESSED_FILE" | grep -Po '^\d+')
 
 	echo "$idx;$SIZE_UNCOMPRESSED;$SIZE_COMPRESSED;$SIZE_DECOMPRESSED" >> $SIZE_FILE
 

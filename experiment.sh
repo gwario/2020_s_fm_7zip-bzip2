@@ -1,6 +1,9 @@
 #!/bin/bash
 
-USAGE="Usage: $0 <reps> <algo> <input>"
+USAGE="Usage: $0 <reps> <algo> <input>\n\n
+\t<reps>\tAny positive integer number above 0.\n
+\t<algo>\tCan be either 'lzma' or 'bzip2'.\n
+\t<input>\tA file or a directory."
 
 if [ $1 -gt 0 ]
 then
@@ -8,23 +11,23 @@ then
 	echo "Repeating measurement $REPS times..."
 else
 	echo "Invalid number of repetitions $1!"
-	echo $USAGE
+	echo -e $USAGE
 	exit
 fi
 
 if [ "$2" = "bzip2" ]
 then
 	ALGO="bzip2"
-	ALGO_EXT="bz2"
+	ALGO_EXT="bzip2.7z"
 	echo "Using $ALGO as algorithm..."
-elif [ "$2" = "7zip" ]
+elif [ "$2" = "lzma" ]
 then
-	ALGO="7z"
-	ALGO_EXT="7z"
-	echo "Using $ALGO as algorithm..."	
+	ALGO="lzma"
+	ALGO_EXT="lzma.7z"
+	echo "Using $ALGO as algorithm..."
 else
 	echo "Invalid algorithm '$2'!"
-	echo $USAGE
+	echo -e $USAGE
 	exit
 fi
 
@@ -34,7 +37,7 @@ then
 	echo "Using $FILE_OR_DIR as input..."
 else
 	echo "Invalid input '$3'!"
-	echo $USAGE
+	echo -e $USAGE
 	exit
 fi
 
@@ -49,6 +52,21 @@ else
 	echo "Creating temp dir..."
 	mkdir $TEMP_DIR
 fi
+
+
+
+echo
+echo "Getting system information..."
+CPU_INFO=$(cat /proc/cpuinfo | head -n5 | tail -n1)
+CPU_N_CORES=$(cat /proc/cpuinfo | head -n11 | tail -n1)
+echo "CPU: "${CPU_INFO#*:}" x "${CPU_N_CORES#*:}
+RAM_INFO=$(cat /proc/meminfo | head -n1)
+echo "RAM: "${RAM_INFO#*:}
+echo "Operating system: "$(uname -a)
+echo "File size measurement: "$(du --version | head -n1)
+echo "Time measurement: "$(/bin/time --version 2>&1)
+echo "Compression tool: "$(7z | head -n2 | tail -n1)
+echo
 
 
 
@@ -72,7 +90,7 @@ do
 	then
 		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_bzip2_comp.sh $FILE_OR_DIR $COMPRESSED_FILE &>/dev/null
 	else
-		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_7z_comp.sh $COMPRESSED_FILE $FILE_OR_DIR &>/dev/null
+		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_lzma_comp.sh $COMPRESSED_FILE $FILE_OR_DIR &>/dev/null
 	fi
 
 	sleep 5
@@ -92,18 +110,18 @@ while [ $idx -lt $REPS ]
 do
 	echo "Repetition $idx..."
 
-	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR"."$ALGO_EXT	
+	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR"."$ALGO_EXT
 
 	if [ "$ALGO" = "bzip2" ]
 	then
 		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_bzip2_decomp.sh $COMPRESSED_FILE $TEMP_DIR &>/dev/null
 	else
-		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_7z_decomp.sh $COMPRESSED_FILE $TEMP_DIR &>/dev/null
+		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_lzma_decomp.sh $COMPRESSED_FILE $TEMP_DIR &>/dev/null
 	fi
 
 	TEMP_DECOMPRESSED_FILE=$TEMP_DIR"/"$FILE_OR_DIR
 	DECOMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR
-	
+
 	mv $TEMP_DECOMPRESSED_FILE $DECOMPRESSED_FILE
 
 	sleep 5
@@ -124,7 +142,7 @@ idx=0
 while [ $idx -lt $REPS ]
 do
 	echo "Repetition $idx..."
-	
+
 	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR"."$ALGO_EXT
 	DECOMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR
 

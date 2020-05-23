@@ -1,7 +1,7 @@
 #!/bin/bash
 FILES=sample_*
 
-REPS=70
+REPS=1
 
 echo "Running experiments on: "
 echo $FILES
@@ -10,7 +10,7 @@ echo ""
 for f in $FILES
 do
 	echo "Running experiment for $f..."
-	
+
   	./experiment.sh $REPS 7zip $f
 	rm -r tmp
 	sleep 5

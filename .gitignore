@@ -2,11 +2,14 @@ results/
 
 sample_config/
 sample_enwik8
-sample_image-data/
+sample_image/
 sample_music/
-sample_vid.mp4
+sample_video.mp4
 
 minitest/
 enwik8.zip
 enwik9.zip
 
+.idea/
+
+results_70/

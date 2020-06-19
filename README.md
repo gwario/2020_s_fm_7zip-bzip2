@@ -7,6 +7,8 @@ $ ./experiments_on_samples.sh
 ```
 
 ## The scripts in detail
+NOTE: The 5 seconds pause is added in order for the CPU and RAM to wind down between operations.
+
 ### experiments_on_samples.sh
 Runs the experiment on all sample data.
 This is the main entry point of the experiment automation. Basic information about the system and tools are displayed (versions, system performance specs, ...)

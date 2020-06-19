@@ -1,6 +1,0 @@
-#!/usr/bin/dash
-
-COMPRESSED_FILE=$1
-FILE_OR_DIR=$2
-
-7z a -t7z $COMPRESSED_FILE $FILE_OR_DIR

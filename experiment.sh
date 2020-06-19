@@ -69,13 +69,13 @@ while [ $idx -lt $REPS ]
 do
 	echo "Repetition $idx..."
 
-	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR"."$ALGO_EXT
+	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR".tar."$ALGO_EXT
 
 	if [ "$ALGO" = "bzip2" ]
 	then
-		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_bzip2_comp.sh $FILE_OR_DIR $COMPRESSED_FILE &>/dev/null
+		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_bzip2_tar_comp.sh $FILE_OR_DIR $COMPRESSED_FILE &>/dev/null
 	else
-		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_lzma_comp.sh $COMPRESSED_FILE $FILE_OR_DIR &>/dev/null
+		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_lzma_tar_comp.sh $FILE_OR_DIR $COMPRESSED_FILE &>/dev/null
 	fi
 
 	sleep 5
@@ -95,18 +95,17 @@ while [ $idx -lt $REPS ]
 do
 	echo "Repetition $idx..."
 
-	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR"."$ALGO_EXT
+	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR".tar."$ALGO_EXT
 
 	if [ "$ALGO" = "bzip2" ]
 	then
-		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_bzip2_decomp.sh $COMPRESSED_FILE $TEMP_DIR &>/dev/null
+		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_bzip2_tar_decomp.sh $COMPRESSED_FILE $TEMP_DIR &>/dev/null
 	else
-		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_lzma_decomp.sh $COMPRESSED_FILE $TEMP_DIR &>/dev/null
+		/bin/time -f "$idx;%e;%S;%U;%P;%M;%I;%O;%x;%C" -a -o "$STATS_FILE" ./7z_lzma_tar_decomp.sh $COMPRESSED_FILE $TEMP_DIR &>/dev/null
 	fi
 
 	TEMP_DECOMPRESSED_FILE=$TEMP_DIR"/"$FILE_OR_DIR
 	DECOMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR
-
 	mv $TEMP_DECOMPRESSED_FILE $DECOMPRESSED_FILE
 
 	sleep 5
@@ -127,8 +126,8 @@ idx=0
 while [ $idx -lt $REPS ]
 do
 	echo "Repetition $idx..."
-
-	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR"."$ALGO_EXT
+	
+	COMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR".tar."$ALGO_EXT
 	DECOMPRESSED_FILE=$TEMP_DIR"/"$idx"_"$FILE_OR_DIR
 
 	SIZE_COMPRESSED=$(du -sb "$COMPRESSED_FILE" | grep -Po '^\d+')

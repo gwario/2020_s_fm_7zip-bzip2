@@ -21,10 +21,10 @@ def prepare_size_dataset(datasets: List[Dict[str, str]]) -> pandas.DataFrame:
         dataset_df = pandas.concat([lzma_df, bzip2_df], axis=1)
         results_df = pandas.concat([results_df, dataset_df])
 
-    results_df.columns = pandas.MultiIndex.from_tuples([("-", 'uncompressed'),
-                                                        ("LZMA", "compressed"),
-                                                        ("bzip2", "compressed")],
-                                                       names=("algorithm", ""))
+    results_df.columns = pandas.MultiIndex.from_tuples([('-', 'uncompressed'),
+                                                        ('LZMA', 'compressed'),
+                                                        ('bzip2', 'compressed')],
+                                                       names=['algorithm', ""])
     return results_df
 
 
@@ -166,6 +166,7 @@ size_dataset.rename(index={'sample_config': 'config', 'sample_enwik8': 'text', '
 ax = size_dataset.plot.bar(rot=45)
 ax.legend(loc='lower left')
 ax.set_ylabel("file size [bytes]")
+ax.set_xlabel("")
 ax.grid(axis='y')
 fig = ax.get_figure()
 fig.tight_layout()
@@ -173,13 +174,16 @@ fig.savefig("size.png")
 
 # bar chart for compressed size per dataset two bars (lzma, bzip2) space saving
 size_dataset[("LZMA", "space_savings")] = (1 - (size_dataset[("LZMA", "compressed")] / size_dataset[("-", "uncompressed")])) * 100
-size_dataset[("bzip2", "space_savings")] = (1 - (size_dataset[("bzip2", "compressed")] / size_dataset[("-", "uncompressed")])) * 100
+size_dataset[("bzip2", "space_savings")] = (1 - (size_dataset[("bzip2", "compressed")] / size_dataset[("-",
+                                                                                                       'uncompressed')])) * 100
 space_savings = size_dataset.drop(columns=[("LZMA", "compressed"), ("-", "uncompressed"), ("bzip2", "compressed")])
+space_savings.columns = space_savings.columns.droplevel(level=1)
 space_savings.rename(index={'sample_config': 'config', 'sample_enwik8': 'text', 'sample_image-data': 'image',
                             'sample_music': 'music', 'sample_vid.mp4': 'video'}, inplace=True)
-ax = space_savings.plot.bar(rot=45)
+ax = space_savings.plot.bar(rot=0)
 ax.legend(loc='upper left')
 ax.set_ylabel("space savings [%]")
+ax.set_xlabel(" ")
 ax.grid(axis='y')
 fig = ax.get_figure()
 fig.tight_layout()
@@ -194,7 +198,7 @@ comp_time_dataset = comp_time_dataset.droplevel(2, axis=1)
 comp_time_dataset.columns.set_levels(['config', 'text', 'image', 'music', 'video'], level=0, inplace=True)
 ax = comp_time_dataset.plot.box(rot=45)
 # ax.legend(loc='upper left')
-ax.set_ylabel("CPU-time (system+user) [s]")
+ax.set_ylabel("Compression • CPU-time (system+user) [s]")
 ax.grid(axis='y')
 fig = ax.get_figure()
 fig.tight_layout()
@@ -207,7 +211,7 @@ decomp_time_dataset = decomp_time_dataset.droplevel(2, axis=1)
 decomp_time_dataset.columns.set_levels(['config', 'text', 'image', 'music', 'video'], level=0, inplace=True)
 ax = decomp_time_dataset.plot.box(rot=45)
 # ax.legend(loc='upper left')
-ax.set_ylabel("CPU-time (system+user) [s]")
+ax.set_ylabel("Decompression • CPU-time (system+user) [s]")
 ax.grid(axis='y')
 fig = ax.get_figure()
 fig.tight_layout()
@@ -221,7 +225,7 @@ comp_space_dataset = comp_space_dataset.droplevel(2, axis=1)
 comp_space_dataset.columns.set_levels(['config', 'text', 'image', 'music', 'video'], level=0, inplace=True)
 ax = comp_space_dataset.plot.box(rot=45)
 # ax.legend(loc='upper left')
-ax.set_ylabel("maximum resident set size [Kilobytes]")
+ax.set_ylabel("Compression • maximum resident set size [Kilobytes]")
 ax.grid(axis='y')
 fig = ax.get_figure()
 fig.tight_layout()
@@ -234,7 +238,7 @@ decomp_space_dataset = decomp_space_dataset.droplevel(2, axis=1)
 decomp_space_dataset.columns.set_levels(['config', 'text', 'image', 'music', 'video'], level=0, inplace=True)
 ax = decomp_space_dataset.plot.box(rot=45)
 # ax.legend(loc='upper left')
-ax.set_ylabel("maximum resident set size [Kilobytes]")
+ax.set_ylabel("Decompression • maximum resident set size [Kilobytes]")
 ax.grid(axis='y')
 fig = ax.get_figure()
 fig.tight_layout()
